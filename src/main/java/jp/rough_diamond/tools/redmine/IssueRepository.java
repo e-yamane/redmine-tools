@@ -1,7 +1,9 @@
 package jp.rough_diamond.tools.redmine;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -51,12 +53,25 @@ public class IssueRepository {
 		return byQueryId(null, includes);
 	}
 	
+	public Iterable<Issue> all2(INCLUDE... includes) throws RedmineException {
+		Map<String, String> param = new HashMap<>();
+		return manager.getIssues(param);
+	}
+
 	public Iterable<Issue> byQueryId(Integer queryId, final INCLUDE... includes) throws RedmineException {
 		return byQueryId(queryId, Predicates.<Issue>alwaysTrue(), includes);
 	}
 	
 	public Iterable<Issue> byQueryId(Integer queryId, Predicate<Issue> localFilter, final INCLUDE... includes) throws RedmineException {
-		List<Issue> list = manager.getIssues(projectKey, queryId, includes);
+		Map<String, String> param = new HashMap<>();
+		param.put("project_id", projectKey);
+		if(queryId == null) {
+			param.put("status_id", "*");
+		} else {
+			param.put("query_id", queryId.toString());
+		}
+		//XXX paramにincludesを渡すべきなんだけど、今のところ渡しても意味ないみたいだし。。。
+		List<Issue> list = manager.getIssues(param);
 		Iterable<Issue> issues = Iterables.filter(list, localFilter);
 		return Iterables.transform(issues, new Function<Issue, Issue>() {
 			@Override

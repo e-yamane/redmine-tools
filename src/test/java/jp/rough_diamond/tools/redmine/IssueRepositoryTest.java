@@ -9,9 +9,11 @@ import static org.mockito.Mockito.verify;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -49,6 +51,7 @@ public class IssueRepositoryTest {
 				return RETURNS_DEFAULTS.answer(invocation);
 			}
 		});
+		
 		repository = new IssueRepository(manager, "testing");
 	}
 
@@ -65,16 +68,28 @@ public class IssueRepositoryTest {
 		assertThat(issue.getId(), is(1));
 	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
 	public void allの呼び出しで引数が正しく渡されている事() throws Exception {
 		repository.all(INCLUDE.journals, INCLUDE.relations);
-		verify(manager).getIssues("testing", null, INCLUDE.journals, INCLUDE.relations);
+		ArgumentCaptor<Map> ac = ArgumentCaptor.forClass(Map.class);
+		verify(manager).getIssues(ac.capture());
+		assertThat(ac.getAllValues().size(), is(1));
+		assertThat(ac.getValue().size(), is(2));
+		assertThat(ac.getValue().get("project_id").toString(), is("testing"));
+		assertThat(ac.getValue().get("status_id").toString(), is("*"));
 	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
 	public void byQueryIdの呼び出しで引数が正しく渡されている事() throws Exception {
 		repository.byQueryId(10, INCLUDE.attachments, INCLUDE.watchers);
-		verify(manager).getIssues("testing", 10, INCLUDE.attachments, INCLUDE.watchers);
+		ArgumentCaptor<Map> ac = ArgumentCaptor.forClass(Map.class);
+		verify(manager).getIssues(ac.capture());
+		assertThat(ac.getAllValues().size(), is(1));
+		assertThat(ac.getValue().size(), is(2));
+		assertThat(ac.getValue().get("project_id").toString(), is("testing"));
+		assertThat(ac.getValue().get("query_id").toString(), is("10"));
 	}
 	
 	@Test
