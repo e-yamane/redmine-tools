@@ -1,6 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
 
+/*
 buildscript {
     repositories {
         maven {
@@ -12,6 +13,7 @@ buildscript {
     }
 }
 apply plugin: 'rdf'
+*/
 
 def defaultEncoding = 'UTF-8'
 [compileJava, compileTestJava]*.options*.encoding = defaultEncoding
@@ -26,8 +28,6 @@ repositories {
 dependencies {
 	compile 			'com.google.guava:guava:15.0'
 	compile 			'com.taskadapter:redmine-java-api:1.21'
-    compile 			'commons-collections:commons-collections:3.2'
-	compile 			'ch.qos.logback:logback-classic:1.1.0'
 	compile 			'ognl:ognl:3.0.8'
 	testCompile 		'org.mockito:mockito-all:1.9.5'
     testCompile 		'junit:junit:4.+'
@@ -37,3 +37,14 @@ task wrapper(type:Wrapper) {
   gradleVersion='1.8'
 }
 
+apply plugin : 'maven'
+group = 'jp.rough_diamond'
+version = '1.0'
+
+uploadArchives {
+	repositories {
+		mavenDeployer {
+        	repository(url: uri('repos/maven'))
+    	}
+	}
+}

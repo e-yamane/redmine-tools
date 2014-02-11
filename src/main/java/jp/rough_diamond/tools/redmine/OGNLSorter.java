@@ -6,7 +6,13 @@ import java.util.Map;
 import ognl.Ognl;
 import ognl.OgnlException;
 
-//XXX この子も別パッケージに移動するかも。。。
+//XXX 別パッケージに移動するかも。。。
+/**
+ * OGNL形式に沿ってコレクションをソートするためのクラス 
+ * @author e-yamane
+ *
+ * @param <T>
+ */
 public class OGNLSorter<T> implements Comparator<T> {
 	private final String ognl;
 	final Map<Object, String> conditions;
