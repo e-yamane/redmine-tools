@@ -27,16 +27,24 @@ import com.google.common.collect.Lists;
  */
 public class OGNLFlatter<F> implements Function<F, Object[]> {
 	final String ognl;
+	final OgnlContext context;
 	public OGNLFlatter(String ognl) throws OgnlException {
 		Ognl.parseExpression(ognl);	//Fail Fast
 		this.ognl = ognl;
+		context = new OgnlContext();
+		context.put("util", new FlatterUtils());
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "serial" })
 	public String[] getHeader() {
 		try {
 			//ヘッダー値が文字列であるという前提でvalueはまぁMapにしとくきゃぬるぽでないからこーしてみる
-			Object ret = Ognl.getValue(ognl, new HashMap<>());
+			Object ret = Ognl.getValue(ognl, context, new HashMap<Object, Object>(){
+				@Override
+				public Object get(Object key) {
+					return new HashMap<>();
+				}
+			});
 			if(ret instanceof Map) {
 				Set<String> keys = ((Map<String, Object>)ret).keySet(); 
 				return keys.toArray(new String[keys.size()]);
@@ -52,8 +60,6 @@ public class OGNLFlatter<F> implements Function<F, Object[]> {
 	@Override
 	public Object[] apply(F obj) {
 		try {
-			OgnlContext context = new OgnlContext();
-			context.put("util", new FlatterUtils());
 			Object ret = Ognl.getValue(ognl, context, obj);
 			if(ret instanceof List) {
 				return toArray((List<Object>)ret);
@@ -76,24 +82,37 @@ public class OGNLFlatter<F> implements Function<F, Object[]> {
 	}
 	
 	public static class FlatterUtils {
-		public <T> List<T> reverse(List<T> list) {
+		@SuppressWarnings("unchecked")
+		public Object reverse(Object obj) {
+			if(obj == null) return null;
+			if(obj.getClass().isArray()) return reverseArray((Object[]) obj);
+			if(obj instanceof List) return reverseList((List<Object>)obj);
+			return obj;
+		}
+		
+		<T> List<T> reverseList(List<T> list) {
 			if(list == null) return null;
 			return Lists.reverse(list);
 		}
 		
 		@SuppressWarnings("unchecked")
-		public <T> T[] reverse(T[] array) {
+		<T> T[] reverseArray(T[] array) {
 			if(array == null) return null;
 			 List<T> list = Lists.reverse(Lists.newArrayList(array));
 			return Iterables.toArray(list, (Class<T>)array.getClass().getComponentType());
 		}
 
-		public String date(Date d, String format) {
+		public String date(Object d, String format) {
+			if(d == null) return "";
+			if(!(d instanceof Date)) return d.toString();
 			DateFormat df = new SimpleDateFormat(format);
 			return df.format(d);
 		}
 		
-		public String join(List<?> list, String separator) {
+		@SuppressWarnings("rawtypes")
+		public String join(Object obj, String separator) {
+			if(!(obj instanceof List)) return obj.toString();
+			List list = (List)obj;
 			return Joiner.on(separator).join(list);
 		}
 	}
