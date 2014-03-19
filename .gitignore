@@ -6,3 +6,4 @@
 *.ear
 /bin
 /repos
+/build
