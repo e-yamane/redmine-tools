@@ -27,7 +27,7 @@ repositories {
 
 dependencies {
 	compile 			'com.google.guava:guava:15.0'
-	compile 			'com.taskadapter:redmine-java-api:1.21'
+	compile 			'com.taskadapter:redmine-java-api:1.24'
 	compile 			'ognl:ognl:3.0.8'
 	testCompile 		'org.mockito:mockito-all:1.9.5'
     testCompile 		'junit:junit:4.+'
@@ -39,7 +39,7 @@ task wrapper(type:Wrapper) {
 
 apply plugin : 'maven'
 group = 'jp.rough_diamond'
-version = '1.0.2'
+version = '2.0.1'
 
 uploadArchives {
 	repositories {

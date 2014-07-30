@@ -1,6 +1,7 @@
 package jp.rough_diamond.tools.redmine;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import com.taskadapter.redmineapi.RedmineException;
 import com.taskadapter.redmineapi.RedmineManager;
 import com.taskadapter.redmineapi.RedmineManager.INCLUDE;
 import com.taskadapter.redmineapi.bean.Issue;
+import com.taskadapter.redmineapi.bean.Tracker;
 
 /**
  * Redminに登録されているチケットにアクセスするためのリポジトリ
@@ -134,5 +136,63 @@ public class IssueRepository {
 				}
 			}
 		});
+	}
+	
+	/**
+	 * チケットを登録する
+	 * @param issue
+	 * @return
+	 * @throws RedmineException
+	 */
+	public Issue createIssue(Issue issue) throws RedmineException {
+		return manager.createIssue(projectKey, issue);
+	}
+
+	/**
+	 * チケットを更新する
+	 * @param issue
+	 * @throws RedmineException
+	 */
+	public void updateIssue(Issue issue) throws RedmineException {
+		manager.update(issue);
+	}
+
+	/**
+	 * RedmineManagerを返却する
+	 * 全ての機能をWrapするつもりはないのでRedmineアクセス用のオブジェクトを返却する
+	 * @return
+	 */
+	public RedmineManager getManager() {
+		return manager;
+	}
+	
+	/**
+	 * 名前に該当するトラッカーを返却する
+	 * @param name
+	 * @return
+	 * @throws RedmineException 
+	 */
+	public Tracker getTrackerByName(String name) throws RedmineException {
+		return getTrackerMap().get(name);
+	}
+	
+	private Map<String, Tracker> trackerMap;
+	Map<String, Tracker> getTrackerMap() throws RedmineException {
+		if(trackerMap == null) {
+			makeTrackerMap();
+		}
+		return trackerMap;
+	}
+
+	synchronized private void makeTrackerMap() throws RedmineException {
+		if(trackerMap != null) {
+			return;
+		}
+		List<Tracker> trackers = manager.getTrackers();
+		Map<String, Tracker> map = new HashMap<>();
+		for(Tracker tracker : trackers) {
+			map.put(tracker.getName(), tracker);
+		}
+		trackerMap = Collections.unmodifiableMap(map);
 	}
 }
