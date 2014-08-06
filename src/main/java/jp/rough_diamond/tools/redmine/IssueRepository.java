@@ -14,6 +14,7 @@ import com.taskadapter.redmineapi.RedmineException;
 import com.taskadapter.redmineapi.RedmineManager;
 import com.taskadapter.redmineapi.RedmineManager.INCLUDE;
 import com.taskadapter.redmineapi.bean.Issue;
+import com.taskadapter.redmineapi.bean.IssueStatus;
 import com.taskadapter.redmineapi.bean.Tracker;
 
 /**
@@ -194,5 +195,35 @@ public class IssueRepository {
 			map.put(tracker.getName(), tracker);
 		}
 		trackerMap = Collections.unmodifiableMap(map);
+	}
+
+	/**
+	 * 名前に該当するステータスを返却する
+	 * @param name
+	 * @return
+	 * @throws RedmineException 
+	 */
+	public IssueStatus getStatusByName(String name) throws RedmineException {
+		return getStatusMap().get(name);
+	}
+
+	private Map<String, IssueStatus> statusMap;
+	Map<String, IssueStatus> getStatusMap() throws RedmineException {
+		if(statusMap == null) {
+			makeStatusMap();
+		}
+		return statusMap;
+	}
+
+	synchronized private void makeStatusMap() throws RedmineException {
+		if(statusMap != null) {
+			return;
+		}
+		List<IssueStatus> statuses = manager.getStatuses();
+		Map<String, IssueStatus> map = new HashMap<>();
+		for(IssueStatus status : statuses) {
+			map.put(status.getName(), status);
+		}
+		statusMap = Collections.unmodifiableMap(map);
 	}
 }
